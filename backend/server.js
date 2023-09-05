@@ -4,6 +4,9 @@ const port = process.env.PORT || 5000;
 const app = express();
 
 import products from './data/products.js';
+import connectDB from './config/db.js';
+
+connectDB();
 
 app.get('/', (req, res) => {
     res.send('API is running...');
