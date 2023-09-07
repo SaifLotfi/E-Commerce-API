@@ -6,6 +6,7 @@ import {
     NotFoundError,
     BadRequestError,
 } from '../errors/index.js';
+import generateToken from '../utils/generateToken.js';
 // @desc    Auth user & get token
 // @route   POST /api/users/login
 // @access  Public
@@ -17,16 +18,7 @@ const authUser = async (req, res) => {
         throw new UnauthenticatedError(`Invalid Email Or Password!`);
     }
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-        expiresIn: '30d',
-    });
-
-    res.cookie('jwt', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV !== 'development',
-        sameSite: 'strict',
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
+    generateToken(res, newUser._id);
 
     res.json({
         _id: user._id,
@@ -40,14 +32,38 @@ const authUser = async (req, res) => {
 // @route   POST /api/users/logout
 // @access  Private
 const logoutUser = async (req, res) => {
-    res.send('logout user');
+    res.clearCookie('jwt');
+    res.status(200).send({ message: 'logged Out Successfully!' });
 };
 
 // @desc    Register a new user
 // @route   POST /api/users
 // @access  Public
 const registerUser = async (req, res) => {
-    res.send('register user');
+    const { name, email, password } = req.body;
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+        throw new BadRequestError('User already exists');
+    }
+    const newUser = await User.create({
+        name,
+        email,
+        password,
+    });
+
+    if (!newUser) {
+        throw new BadRequestError('Failed to create user');
+    }
+
+    generateToken(res, newUser._id);
+
+    res.status(201).json({
+        _id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        isAdmin: newUser.isAdmin,
+    });
 };
 
 // @desc    Get user profile
