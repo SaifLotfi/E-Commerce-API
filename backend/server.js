@@ -10,6 +10,7 @@ import productRouter from './routes/product.js';
 import notFoundMiddleware from './middleware/not-found.js';
 import globalErrorHandlerMiddleware from './middleware/error-handler.js';
 import userRouter from './routes/user.js';
+import orderRouter from './routes/order.js';
 connectDB();
 
 app.use(express.json());
@@ -23,6 +24,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/products', productRouter);
 app.use('/api/users', userRouter);
+app.use('/api/orders', orderRouter);
 app.use(notFoundMiddleware);
 app.use(globalErrorHandlerMiddleware);
 
