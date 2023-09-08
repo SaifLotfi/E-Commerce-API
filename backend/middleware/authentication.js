@@ -9,12 +9,11 @@ const isAuth = async (req, res, next) => {
     }
     try {
         const decodedToken = jwt.verify(authToken, process.env.JWT_SECRET); //should we add try catch ?
-        req.user = await User.findById(decodedToken._id).select('-password');
+        req.user = await User.findById(decodedToken.userId).select('-password')
     } catch (err) {
         console.log(err);
         throw new UnauthenticatedError('Invalid Token!');
     }
-
     next();
 };
 
