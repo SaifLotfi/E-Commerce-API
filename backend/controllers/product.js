@@ -26,4 +26,24 @@ const getAllProducts = async (req, res, next) => {
     res.json(products);
 };
 
-export { getProduct, getAllProducts };
+//@desc     Create a Product
+//route     POST /api/products
+//@access   Private/Admin
+const createProduct = async (req, res, next) => {
+    //create sample product
+    const product = new Product({
+        name: 'Sample Name',
+        price: 0,
+        user: req.user._id,
+        image: '/images/sample.jpg',
+        brand: 'Sample Brand',
+        category: 'Sample Category',
+        countInStock: 0,
+        numReviews: 0,
+        description: 'Sample Description',
+    });
+    await product.save();
+    res.status(201).json(product);
+}
+
+export { getProduct, getAllProducts,createProduct };

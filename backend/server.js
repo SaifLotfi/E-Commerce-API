@@ -28,6 +28,10 @@ app.use('/api/orders', orderRouter);
 app.use(notFoundMiddleware);
 app.use(globalErrorHandlerMiddleware);
 
+app.get('/api/config/paypal', (req, res) => {
+    res.send({clientId:process.env.PAYPAL_CLIENT_ID});
+});
+
 app.use((err,req,res,next)=>{
     console.log(err.msg);
     res.status(500).send({msg:err.message})
