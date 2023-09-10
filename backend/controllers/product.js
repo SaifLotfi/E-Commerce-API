@@ -45,5 +45,26 @@ const createProduct = async (req, res, next) => {
     await product.save();
     res.status(201).json(product);
 }
+//@desc     Edit a Product
+//route     PUT /api/products/:id
+//@access   Private/Admin
+const updateProduct = async (req, res, next) => {
+    const productId = req.params.id;
+    const product = await Product.findById(productId);
+    if (product) {
+        product.name = req.body.name||product.name;
+        product.price = req.body.price||product.price;
+        product.image = req.body.image||product.image;
+        product.brand = req.body.brand||product.brand;
+        product.category = req.body.category||product.category;
+        product.countInStock = req.body.countInStock||product.countInStock;
+        product.description = req.body.description||product.description;
 
-export { getProduct, getAllProducts,createProduct };
+        const updatedProduct = await product.save();
+        return res.status(200).json(updatedProduct);
+    }
+
+    throw new NotFoundError(`No Such Product with Id :${productId}`);
+};
+
+export { getProduct, getAllProducts,createProduct ,updateProduct};
