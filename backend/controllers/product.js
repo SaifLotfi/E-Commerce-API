@@ -5,6 +5,8 @@ import {
     BadRequestError,
 } from '../errors/index.js';
 
+const PRODUCTS_PER_PAGE = 8;
+
 //@desc     Fetch all Products
 //route     Get /api/products/:id
 //@access   Public
@@ -22,8 +24,13 @@ const getProduct = async (req, res, next) => {
 //route     Get /api/products
 //@access   Public
 const getAllProducts = async (req, res, next) => {
-    const products = await Product.find({});
-    res.json(products);
+    const searchKeyword = req.query.keyword ? {name:{$regex:req.query.keyword , $options:'i'}}:{};
+    const page = req.query.pageNumber||1;
+    const products = await Product.find({...searchKeyword}).skip((page-1)*PRODUCTS_PER_PAGE).limit(PRODUCTS_PER_PAGE);
+    const noOfPages = await Product.countDocuments({...searchKeyword});
+
+
+    res.json({products,page,pages:Math.ceil(noOfPages/PRODUCTS_PER_PAGE)});
 };
 
 //@desc     Create a Product
@@ -82,4 +89,57 @@ const deleteProduct = async (req, res, next) => {
     throw new NotFoundError(`No Such Product with Id :${productId}`);
 };
 
-export { getProduct, getAllProducts, createProduct, updateProduct,deleteProduct };
+//@desc     Create a Review
+//route     POST /api/products/:id/reviews
+//@access   Private
+const createProductReview = async (req, res, next) => {
+    const { rating, comment } = req.body;
+    const productId = req.params.id;
+    const product = await Product.findById(productId);
+    //Add review to product
+    if (product) {
+        
+        if(product.reviews.find(r=>r.user.toString() === req.user._id.toString())){
+            res.status(401).json({message:"Product Already Reviewed!"});
+        }else{
+            product.reviews.push({ 
+                user:req.user._id,
+                name:user.name, 
+                rating:Number(rating),
+                comment
+            });
+            product.numReviews = product.reviews.length;
+            product.rating = product.reviews.reduce((pV,cV)=>{
+                return (cV.rating + pV)/(product.reviews.length) 
+            },0);
+            const updatedProduct = await product.save();
+            res.status(201).json({message:"Product Reviewed Successfully!"});
+        }
+    } else {
+        throw new NotFoundError(`No Such Product with Id :${productId}`);
+    }
+
+    await product.save();
+    res.status(201).json(product);
+};
+
+//@desc     Get Top Products
+//route     Get /api/products/top
+//@access   Public
+const getTopProducts = async (req, res, next) => {
+    
+    const products = await Product.find({}).sort('-rating').limit(3);
+    
+        return res.status(200).json(products);
+    
+};
+
+export {
+    getProduct,
+    getAllProducts,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    createProductReview,
+    getTopProducts
+};
