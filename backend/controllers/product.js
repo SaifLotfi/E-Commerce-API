@@ -6,7 +6,7 @@ import {
 } from '../errors/index.js';
 
 //@desc     Fetch all Products
-//route     Get /api/products
+//route     Get /api/products/:id
 //@access   Public
 const getProduct = async (req, res, next) => {
     const productId = req.params.id;
@@ -44,7 +44,7 @@ const createProduct = async (req, res, next) => {
     });
     await product.save();
     res.status(201).json(product);
-}
+};
 //@desc     Edit a Product
 //route     PUT /api/products/:id
 //@access   Private/Admin
@@ -52,13 +52,13 @@ const updateProduct = async (req, res, next) => {
     const productId = req.params.id;
     const product = await Product.findById(productId);
     if (product) {
-        product.name = req.body.name||product.name;
-        product.price = req.body.price||product.price;
-        product.image = req.body.image||product.image;
-        product.brand = req.body.brand||product.brand;
-        product.category = req.body.category||product.category;
-        product.countInStock = req.body.countInStock||product.countInStock;
-        product.description = req.body.description||product.description;
+        product.name = req.body.name || product.name;
+        product.price = req.body.price || product.price;
+        product.image = req.body.image || product.image;
+        product.brand = req.body.brand || product.brand;
+        product.category = req.body.category || product.category;
+        product.countInStock = req.body.countInStock || product.countInStock;
+        product.description = req.body.description || product.description;
 
         const updatedProduct = await product.save();
         return res.status(200).json(updatedProduct);
@@ -67,4 +67,19 @@ const updateProduct = async (req, res, next) => {
     throw new NotFoundError(`No Such Product with Id :${productId}`);
 };
 
-export { getProduct, getAllProducts,createProduct ,updateProduct};
+//@desc     Delete a Product
+//route     DELETE /api/products/:id
+//@access   Private/Admin
+const deleteProduct = async (req, res, next) => {
+    const productId = req.params.id;
+    const product = await Product.findById(productId);
+    if (product) {
+        await Product.deleteOne({ _id: productId });
+        return res
+            .status(200)
+            .json({ message: 'Product Deleted Successfully' });
+    }
+    throw new NotFoundError(`No Such Product with Id :${productId}`);
+};
+
+export { getProduct, getAllProducts, createProduct, updateProduct,deleteProduct };
