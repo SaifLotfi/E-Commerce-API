@@ -5,7 +5,7 @@ import {
     BadRequestError,
 } from '../errors/index.js';
 
-const PRODUCTS_PER_PAGE = 8;
+const PRODUCTS_PER_PAGE = process.env.PAGINATION_LIMIT;
 
 //@desc     Fetch all Products
 //route     Get /api/products/:id
